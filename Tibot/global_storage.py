@@ -4,6 +4,10 @@ import random
 
 from discord.ext import commands
 
+BOT_ADMIN = 740330728348319765
+BOT_MODERATOR = 740322815227592727
+COUNTING_CHANNEL = 740916215316349008
+DEFAULT_ROLE = 740330257437163623
 PREFIX = "~"
 NO_LOGS = ["156019409658314752", "660613170636914698"]
 TICKET_CATEGORY_COMPLETE = 740635626373775480
@@ -21,6 +25,10 @@ def CREATECODE():
 def FILEREAD(fpath): 
     with open(f"local_Store/{fpath}", "r") as file:
         return file.read()
+
+def FILEWRITE(fpath, data):
+    with open(f"local_Store/{fpath}", "w") as file:
+        file.write(data)
 
 def JSONREAD(fpath):
     with open(f"local_Store/{fpath}", "r") as file:

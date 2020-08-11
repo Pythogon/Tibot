@@ -20,17 +20,8 @@ class Tickets(commands.Cog):
         for attachment in message.attachments:
             content += f"\n{attachment.url}"
         tunnel = self.bot.get_channel(pair)
-        await tunnel.send(f"[{code}] ○:tropical_fish:● {content}")
+        await tunnel.send(f"[{code}] ○<:tibo:742798600769110128>● {content}")
         await message.channel.edit(topic=message.author.id)
-
-    @commands.Cog.listener()
-    async def on_member_join(self, member):
-        userdata = gs.USERDATA_READ(member.id)
-        welcome_channel = self.bot.get_channel(gs.WELCOME_CHANNEL)
-        if userdata["code"] == None:
-            userdata["code"] = gs.CREATECODE()
-            gs.USERDATA_WRITE(member.id, userdata)
-        await welcome_channel.send(f"Welcome {member.mention} to Tibot Support! We're glad to have you. Please make sure to read the rules.")
     
     @commands.command()
     async def close(self, ctx):
@@ -59,7 +50,7 @@ class Tickets(commands.Cog):
             gs.JSONWRITE("channel_pairs.json", tickets)  
 
     @commands.group()
-    @commands.has_role(740322815227592727)
+    @commands.has_role(gs.BOT_MODERATOR)
     async def notes(self, ctx):
         if ctx.invoked_subcommand == None:
             await ctx.send("Correct usage is ~`notes add|list|remove`")
@@ -68,13 +59,13 @@ class Tickets(commands.Cog):
     async def notes_add(self, ctx, code, *note):
         note = " ".join(note)
         with open(f"local_Store/notes/{code}", "a+") as file:
-            file.write(f"{note}\n")
+            file.write(f"\n{note}")
         await ctx.send("Added note.")
 
     @notes.command(name = "list")
     async def notes_list(self, ctx, code):
         with open(f"local_Store/notes/{code}", "r") as file:
-            data = file.read()
+            data = file.read().strip("\n")
             data = data.split("\n")
         to_send = ""
         for x in range(len(data)):
@@ -85,7 +76,7 @@ class Tickets(commands.Cog):
     async def notes_remove(self, ctx, code, number: int):
         with open(f"local_Store/notes/{code}", "r") as file:
             data = file.read()
-            data.split("\n")
+            data = data.split("\n")
         data.pop(number - 1)
         data = "\n".join(data)
         with open(f"local_Store/notes/{code}", "w") as file:
@@ -93,13 +84,32 @@ class Tickets(commands.Cog):
         await ctx.send("Removed note.")
 
     @commands.command()
+    @commands.has_role(gs.BOT_ADMIN)
     async def notify(self, ctx):
         try:
             tunnel = self.bot.get_channel(gs.QUERY_PAIR(ctx.channel.id))
             tunnel_user = self.bot.get_user(int(tunnel.topic))
             await tunnel.send(tunnel_user.mention)
         except: pass
+
+    @commands.group()
+    async def query(self, ctx):
+        if ctx.invoked_subcommand == None:
+            await ctx.send("Correct usage is `~query code [CODE]`")
+    
+    @query.command(name = "code")
+    async def query_code(self, ctx, code):
+        result = gs.QUERY_CODE(code)
+        print(result)
+        if result == None:
+            return await ctx.send("I can't find that code.")
+        else:
+            user_obj = self.bot.get_user(int(result))
+            print(user_obj)
+            user_name = user_obj.name + "#" + user_obj.discriminator
+            return await ctx.send(f"{user_name} ({user_obj.id})")
         
+
     @commands.command()
     async def support(self, ctx):
         author = ctx.author.id
